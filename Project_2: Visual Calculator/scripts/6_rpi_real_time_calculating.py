@@ -1,28 +1,64 @@
-import cv2
+# -*- coding: utf-8 -*-
+
+# pip install opencv-python==4.9.0.80
+# pip install numpy==1.26
+# pip install tensorflow tflite_runtime matplotlib keras scipy
+
+# Check versions: python -m pip list | grep -E 'numpy|opencv'
+
+import cv2  
 import numpy as np
 import tflite_runtime.interpreter as tflite
+#import tflite
 import time
 import operator
-
+import os
+import scipy
 
 
 def main():
-    interpreter = tflite.Interpreter(model_path='/home/pi/Tiny-ML/Project_2: Visual Calculator/data/model/vc_model.tflite')
+    # Get current directory and set it as root directory
+    root_directory = os.path.dirname(os.path.abspath(__file__))
+    # get parent directory
+    root_directory = os.path.dirname(root_directory)
+    print(f"Root Directory: {root_directory}")
+    file_w_path = root_directory + '/data/model/vc_model.tflite'
+    if not os.path.exists(file_w_path):
+        print(f"File {file_w_path} do not exits, exits")
+        return False
+    interpreter = tflite.Interpreter(model_path=file_w_path)
     labels = ["divide" , "eight","five","four","min","mul","nine","one","plus","seven","six","three","two"]
     integer_labels = [operator.floordiv ,8 , 5 , 4 , operator.sub, operator.mul , 9, 1 ,operator.add , 7 ,6 ,3,2]
     input_details   = interpreter.get_input_details()
     output_details = interpreter.get_output_details()
+
     video_feed = cv2.VideoCapture(0)
+    if not video_feed.isOpened():
+        print("Error: Could not open video feed")
+        return False
+    video_feed.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+    video_feed.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
 
     current_prediction  = 0
     previous_prediction = 0
     prediction_array = [14]
     equation_array = []
-    while(1):
-        _,frame = video_feed.read()
+
+    while True:
+        ok,frame = video_feed.read()
+        if not ok:
+            print("Failed to read frame from camera")
+            break
         gray_scaled = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
-        cv2.rectangle(gray_scaled, (350,100),(550,300), (255,0,0), 2)
-        sqaure_region = gray_scaled[100:300,350:550]
+        # Draw rectangle to about center and about 30% of height
+        #print(f"Frame Shape: {gray_scaled.shape}")
+        box_height = int(gray_scaled.shape[0] * 0.3)
+        box_top_left = (int(gray_scaled.shape[1] * 0.5)-box_height//2, int(gray_scaled.shape[0] * 0.5)-box_height//2)
+        box_bottom_right = (int(gray_scaled.shape[1] * 0.5)+box_height//2, int(gray_scaled.shape[0] * 0.5)+box_height//2)
+        cv2.rectangle(gray_scaled, box_top_left, box_bottom_right, (255,0,0), 2)
+        #cv2.rectangle(gray_scaled, (350,100),(550,300), (255,0,0), 2)
+        # sqaure_region = gray_scaled[100:300,350:550]
+        sqaure_region = gray_scaled[box_top_left[1]:box_bottom_right[1],box_top_left[0]:box_bottom_right[0]]
         cv2.imshow("Full Frame", gray_scaled)
         cv2.waitKey(1)
         circle_location = cv2.HoughCircles(sqaure_region , cv2.HOUGH_GRADIENT,1.2,20)

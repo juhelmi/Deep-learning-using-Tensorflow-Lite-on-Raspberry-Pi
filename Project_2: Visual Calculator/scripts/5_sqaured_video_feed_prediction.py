@@ -3,25 +3,50 @@ import numpy as np
 import tensorflow as tf
 import time
 import sys
+import os
 
 def main():
-    interpreter = tf.lite.Interpreter('data/model/vc_model.tflite')
+    #interpreter = tf.lite.Interpreter('data/model/vc_model.tflite')
+    # Get current directory and set it as root directory
+    root_directory = os.path.dirname(os.path.abspath(__file__))
+    # get parent directory
+    root_directory = os.path.dirname(root_directory)
+    print(f"Root Directory: {root_directory}")
+    file_w_path = root_directory + '/data/model/vc_model.tflite'
+    if not os.path.exists(file_w_path):
+        print(f"File {file_w_path} do not exits, exits")
+        return False
+    interpreter = tf.lite.Interpreter(model_path=file_w_path)
     labels = ["divide" , "eight","five","four","min","mul","nine","one","plus","seven","six","three","two"]
     input_details   = interpreter.get_input_details()
     output_details = interpreter.get_output_details()
     video_feed = cv2.VideoCapture(0)
 
+    if not video_feed.isOpened():
+        print("Error: Could not open video feed")
+        return False
+    video_feed.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+    video_feed.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+
     current_prediction  = 0
     previous_prediction = 0
     equation_array=[]
-    while(1):
+    while True:
         _,frame = video_feed.read()
         gray_scaled = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
-        cv2.rectangle(gray_scaled, (14,219),(172,363), (255,0,0), 2)
-        sqaure_region = gray_scaled[219:363 , 14:172]
+        #cv2.rectangle(gray_scaled, (14,219),(172,363), (255,0,0), 2)
+        #sqaure_region = gray_scaled[219:363 , 14:172]
+        box_height = int(gray_scaled.shape[0] * 0.3)
+        box_top_left = (int(gray_scaled.shape[1] * 0.5)-box_height//2, int(gray_scaled.shape[0] * 0.5)-box_height//2)
+        box_bottom_right = (int(gray_scaled.shape[1] * 0.5)+box_height//2, int(gray_scaled.shape[0] * 0.5)+box_height//2)
+        cv2.rectangle(gray_scaled, box_top_left, box_bottom_right, (255,0,0), 2)
+        #cv2.rectangle(gray_scaled, (350,100),(550,300), (255,0,0), 2)
+        # sqaure_region = gray_scaled[100:300,350:550]
+        sqaure_region = gray_scaled[box_top_left[1]:box_bottom_right[1],box_top_left[0]:box_bottom_right[0]]
         cv2.imshow("Full Frame", gray_scaled)
         cv2.imshow("Sqaured Frame", sqaure_region)
-        cv2.waitKey(1)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
         circle_location = cv2.HoughCircles(sqaure_region , cv2.HOUGH_GRADIENT,1.2,20)
 
         if circle_location is not None:
@@ -53,7 +78,8 @@ def main():
                     print(labels[current_prediction])
                     previous_prediction = current_prediction
                 cv2.imshow("Region of Interest", roi)
-                cv2.waitKey(1)
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
 
 
 if __name__ == '__main__':
