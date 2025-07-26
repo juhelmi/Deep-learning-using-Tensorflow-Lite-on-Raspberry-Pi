@@ -3,7 +3,7 @@ Original README.md is as is. Mainly things works as they have been working. Targ
 
 Python module versions have about same features or they could be newer.
 
-Local run for jupyter notebook was used. Virtual environment handling is some how simpler. First run things is Ubuntu and later in Raspberry Pi. Pyenv works in bosth cases.
+Local run for jupyter notebook was used. Virtual environment handling is some how simpler. First run things is Ubuntu and later in Raspberry Pi. Pyenv works in both cases.
 
 # Some using hints
 Dig IP address for Raspberry Pi
