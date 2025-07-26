@@ -1,7 +1,12 @@
+# Purpose of additional notes
+Original README.md is as is. Mainly things works as they have been working. Target is to get same or nearly same done with current tools. 
 
+Python module versions have about same features or they could be newer.
+
+Local run for jupyter notebook was used. Virtual environment handling is some how simpler. First run things is Ubuntu and later in Raspberry Pi. Pyenv works in bosth cases.
 
 # Some using hints
-Dig ip address for Raspberry Pi
+Dig IP address for Raspberry Pi
 
 `nmap -sn 192.168.1.0/24`
 
@@ -26,6 +31,8 @@ note: use this environment also in vs code
 - pip install tflite
 - pip install tflite-runtime
 - pip install matplotlib keras scipy
+
+If tensorflow will not work then try ```tensorflow==2.19.0``` also not any more supported runtime is ```tflite-runtime==2.14.0```.
 
 Some needed modules might be missing. Check errors and install what is missing.
 
