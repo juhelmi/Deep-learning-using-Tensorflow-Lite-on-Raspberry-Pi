@@ -2,19 +2,35 @@
 import sounddevice as sd
 import numpy as np
 from scipy.io.wavfile import write
+import time
+import os
+
+# Notebook expects 50 samples per category
+number_of_repeats = 50
+categories = ['on', 'off', 'red', 'green']
 
 
-i = 0
+root_directory = os.path.dirname(os.path.abspath(__file__))
+root_directory = os.path.dirname(root_directory)
+data_directory = root_directory + '/data_jh/'
 
-for i in range(50):
-    category = 'green'
-    file_name = category+"_" + str(i)
-    duration = 1  # seconds
-    fs = 22050
-    print(" Speak now -> " , category)
-    audio_rec = sd.rec(int(duration * fs), samplerate=fs, channels=1)
-    sd.wait()
-    int_audio = (np.clip(audio_rec, -32768, 32767)) * 32767
-    write('data/' +category + "/" + file_name + ".wav", fs, int_audio.astype(np.int16))
+if not os.path.exists(data_directory):
+    print(f"Creating data directory: {data_directory}")
+    os.makedirs(data_directory)
 
-    print("Recorded -> ", i)
+for category in categories:
+    print(f"Current category: {category}")
+    time.sleep(1)  # Wait for a second before starting the recording
+    for i in range(number_of_repeats):
+        #category = 'green'
+        file_name = category+"_" + f"{i:02d}"  # Format the number with leading zeros
+        duration = 1  # seconds
+        fs = 22050
+        print(" Speak now -> " , category)
+        audio_rec = sd.rec(int(duration * fs), samplerate=fs, channels=1)
+        sd.wait()
+        int_audio = (np.clip(audio_rec, -32768, 32767)) * 32767
+        write(data_directory +category + "/" + file_name + ".wav", fs, int_audio.astype(np.int16))
+
+        print("Recorded -> ", i)
+        time.sleep(0.5)
