@@ -52,6 +52,11 @@ This might require
 - pip install sounddevice
 - pip install seaborn
 
+- pip install pulsectl  and might require ```sudo apt install libpulse-dev```
+-
+- Pyaudio requires ```sudo apt install portaudio19-dev python3-pyaudio``` on Ubuntu.
+- Newer in Ubuntu is PipeWire but not yet so much examples and PulseAudio uses it nicely
+- pip install pipewire_python
 
 # Migration to newer version
 
@@ -64,3 +69,7 @@ New module can be istalled with
 `from ai_edge_litert.interpreter import Interpreter`
 
 `interpreter = Interpreter(model_path=args.model_file`
+
+# Vs code select interpreter
+Ctrl + Shift + P
+

@@ -6,6 +6,7 @@ from scipy import signal
 import tflite_runtime.interpreter as tflite
 
 import time
+import sounddevice as sd
 
 def get_project_root():
     import os
@@ -14,6 +15,22 @@ def get_project_root():
 
 def logger(variable_name , variable_value):
     print(variable_name ," : " , variable_value)
+
+def get_current_microphone_input_device():
+    devices = sd.query_devices()
+    for i, device in enumerate(devices):
+        if device['max_input_channels'] > 0:
+            print(f"Device {i}: {device['name']} (Input Channels: {device['max_input_channels']})")
+    return devices[sd.default.device]['name']
+
+def change_microphone_input_device(device_name):
+    devices = sd.query_devices()
+    for i, device in enumerate(devices):
+        if device_name in device['name']:
+            sd.default.device = i
+            print(f"Microphone input device changed to: {device['name']}")
+            return
+    print(f"Device '{device_name}' not found. Using default device.")
 
 def main():
     root_directory = get_project_root()
@@ -51,4 +68,13 @@ def main():
     logger("Lite Model Predictions ",labels[np.argmax(tflite_prediction_result)] ) #  labels[np.argmax(tflite_prediction_result)]
 
 if __name__ == '__main__':
-    main()
+    mic_value = get_current_microphone_input_device()
+    print(f"Current Microphone Input Device: {mic_value}")
+    change_microphone_input_device("USB Audio Device")  # Change to your desired device name
+    print("Starting Audio Prediction...")
+    time.sleep(1)  # Wait for a second before starting the prediction
+    logger("Current Microphone Input Device", get_current_microphone_input_device())
+    # main()
+
+    # And Revert microphone Input Device
+    change_microphone_input_device(mic_value)
