@@ -97,31 +97,35 @@ if __name__ == "__main__":
     parser.add_argument('--duration', type=int, default=2, help='Duration of recording in seconds')
     parser.add_argument('--filename', type=str, default='test.wav', help='Output WAV filename')
     parser.add_argument('--sample_rate', type=int, default=44100, help='Sample rate for recording')
-    parser.add_argument('--search_input', type=str, default='web', help='Search term for input source')
-    parser.add_argument('--search_output', type=str, default='Blaster', help='Search term for output sink')
+    parser.add_argument('--search_input', type=str, default=None, help='Search term for input source')
+    parser.add_argument('--search_output', type=str, default=None, help='Search term for output sink')
+    # parser.add_argument('-h', '--help', action='store_true', help='Show this help message and exit')
     args = parser.parse_args()
-    if args.help:
-        parser.print_help()
-        sys.exit(0)
+    # if args.help:
+    #     parser.print_help()
+    #     sys.exit(0)
     #get_pulse_audio_info()
-    if args.search_input.lower() == "web" and args.search_output.lower() == "hdmi":
+    if args.search_input is None:
         search_input_term = "web"
-        search_output_term = "HDMI"
     else:
-        search_input_term = "Blaster"
+        search_input_term = args.search_input
+    if args.search_output is None:
         search_output_term = "Blaster"
-    matching_devices = get_source_names_with_search_term(search_input_term)
-    # print("Matching devices:")
-    # for name in matching_devices:
-    #     print(f" - {name}")
-    if len(matching_devices) == 0:
-        print(f"No devices found with search term '{search_input_term}'")
-        sys.exit(1)
     else:
-        set_default_source(matching_devices[0][0])
+        search_output_term = args.search_output
+    matching_devices = get_source_names_with_search_term(search_input_term)
+    if len(matching_devices) == 0:
+        if args.search_input is None:
+            search_input_term = "Blaster"
+            matching_devices = get_source_names_with_search_term(search_input_term)
+        if len(matching_devices) == 0:
+            print(f"No devices found with search term '{search_input_term}'")
+            sys.exit(1)
+    
+    set_default_source(matching_devices[0][0])
     if not set_default_sink_with_search_term(search_output_term):
-        print(f"Failed to set default sink with search term '{search_output_term}'. Exiting.")
-        sys.exit(2)
+        print(f"Failed to set default sink with search term '{search_output_term}'.")
+        # Uses current sink              
 
     print("Recording audio coming...")
     time.sleep(2)  # Wait for 2 seconds before recording
